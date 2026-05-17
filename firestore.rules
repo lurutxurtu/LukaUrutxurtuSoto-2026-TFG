@@ -1,10 +1,73 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Para simplificar ahora mismo y que no tengas errores,
-    // permitimos lectura y escritura a cualquier usuario que haya hecho login con éxito.
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    
+    // Funcion: Comprueba si el usuario ha iniciado sesion
+    function isAuth() {
+      return request.auth != null;
+    }
+    
+    // Funcion: Comprueba si el usuario es miembro de un grupo
+    function isGroupMember(groupId) {
+      return isAuth() && (request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.memberIds);
+    }
+
+    // PERFILES DE USUARIO
+    match /users/{userId} {
+      // Cualquiera logueado puede leer perfiles
+      allow read: if isAuth();
+      // Solo tú puedes modificar tu propio perfil
+      allow write: if isAuth() && request.auth.uid == userId;
+    }
+
+    // GRUPOS
+    match /groups/{groupId} {
+      // Leer: Cualquier usuario logueado puede leer datos de grupos.
+      allow read: if isAuth();
+      
+      // Crear: Cualquiera puede crear un grupo nuevo, siempre que se ponga a sí mismo como propietario (ownerId) y como único miembro.
+      allow create: if isAuth()
+                    && request.resource.data.ownerId == request.auth.uid
+                    && request.auth.uid in request.resource.data.memberIds;
+      
+      // Actualizar: Dos casos posibles.
+      allow update: if isAuth()
+                    && (
+                      // Ya eres miembro del grupo.
+                      request.auth.uid in resource.data.memberIds
+                      && (
+                        // Te estás quitando a ti mismo (abandonar grupo)
+                        (
+                          !(request.auth.uid in request.resource.data.memberIds)
+                          && request.resource.data.memberIds.size() == resource.data.memberIds.size() - 1
+                        )
+                        // Eres el propietario/admin
+                        || resource.data.ownerId == request.auth.uid
+                      )
+                      // Te estás uniendo al grupo - (solo puedes añadirte a ti mismo)
+                      || (
+                        !(request.auth.uid in resource.data.memberIds)
+                        && request.auth.uid in request.resource.data.memberIds
+                        && request.resource.data.memberIds.hasAll(resource.data.memberIds)
+                        && request.resource.data.memberIds.size() == resource.data.memberIds.size() + 1
+                      )
+                    );
+      
+      // Eliminar: Solo el propietario puede borrar el grupo
+      allow delete: if isAuth() && request.auth.uid == resource.data.ownerId;
+      
+
+      // SUB-COLECCIONES
+      
+      match /expenses/{expenseId} {
+        // Solo los miembros del grupo pueden ver y gestionar gastos.
+        allow read, write: if isGroupMember(groupId);
+      }
+      
+      match /settlements/{settlementId} {
+        // Solo los miembros del grupo pueden ver y gestionar liquidaciones.
+        allow read, write: if isGroupMember(groupId);
+      }
     }
   }
 }
