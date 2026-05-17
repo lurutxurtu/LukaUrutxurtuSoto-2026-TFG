@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGroup } from '../hooks/useGroups';
-import { leaveGroup } from '../services/groupService';
+import { leaveGroup, removeMemberFromGroup } from '../services/groupService';
 import { useExpenses } from '../hooks/useExpenses';
 import { useSettlements } from '../hooks/useSettlements';
 import { useBalances } from '../hooks/useBalances';
@@ -28,10 +28,21 @@ export function GroupDetailPage() {
 
   const [activeTab, setActiveTab] = useState<Tab>('expenses');
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (group && user && !group.memberIds.includes(user.uid)) {
+      navigate('/');
+    }
+  }, [group, user, navigate]);
   
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [leaveError, setLeaveError] = useState('');
   const [leaving, setLeaving] = useState(false);
+
+  const [showExpelModal, setShowExpelModal] = useState(false);
+  const [expelTarget, setExpelTarget] = useState<{ id: string; name: string } | null>(null);
+  const [expelError, setExpelError] = useState('');
+  const [expelling, setExpelling] = useState(false);
 
   const loading = groupLoading || expensesLoading;
 
@@ -62,6 +73,21 @@ export function GroupDetailPage() {
     } catch (err: unknown) {
       setLeaveError(err instanceof Error ? err.message : 'Error al abandonar el grupo');
       setLeaving(false);
+    }
+  };
+
+  const handleExpel = async () => {
+    if (!groupId || !user || !expelTarget) return;
+    setExpelling(true);
+    setExpelError('');
+    try {
+      await removeMemberFromGroup(groupId, user.uid, expelTarget.id);
+      setShowExpelModal(false);
+      setExpelTarget(null);
+    } catch (err: unknown) {
+      setExpelError(err instanceof Error ? err.message : 'Error al expulsar integrante');
+    } finally {
+      setExpelling(false);
     }
   };
 
@@ -185,11 +211,33 @@ export function GroupDetailPage() {
                 <div key={balance.userId} className="flex items-center justify-between p-3 bg-bg-secondary border border-border rounded-xl">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-bg-tertiary flex items-center justify-center text-xs font-semibold text-text-primary">{getInitials(balance.displayName)}</div>
-                    <span className="text-sm text-text-primary">{balance.displayName}</span>
+                    <span className="text-sm text-text-primary">
+                      {balance.displayName} {user?.uid === balance.userId && <span className="text-text-muted font-normal text-xs ml-1">(Tú)</span>}
+                      {group.ownerId === balance.userId && <span className="ml-2 text-[10px] font-bold tracking-wider text-neon-pink bg-neon-pink/10 px-2 py-0.5 rounded-full uppercase">Admin</span>}
+                    </span>
                   </div>
-                  <span className={`text-sm font-semibold ${balance.amount > 0.01 ? 'text-neon-green' : balance.amount < -0.01 ? 'text-neon-pink' : 'text-text-secondary'}`}>
-                    {balance.amount > 0 ? '+' : ''}{formatCurrency(balance.amount, group.currency)}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-sm font-semibold ${balance.amount > 0.01 ? 'text-neon-green' : balance.amount < -0.01 ? 'text-neon-pink' : 'text-text-secondary'}`}>
+                      {balance.amount > 0 ? '+' : ''}{formatCurrency(balance.amount, group.currency)}
+                    </span>
+                    {user?.uid === group.ownerId && balance.userId !== user.uid && (
+                      <button 
+                        onClick={() => {
+                          if (Math.abs(balance.amount) > 0.01) {
+                            alert('No puedes echar a un integrante que tenga deudas pendientes. Primero salda las cuentas.');
+                            return;
+                          }
+                          setExpelTarget({ id: balance.userId, name: balance.displayName });
+                          setShowExpelModal(true);
+                          setExpelError('');
+                        }}
+                        className="p-1.5 text-text-muted hover:text-neon-red hover:bg-neon-red/10 rounded-lg transition-colors"
+                        title="Echar del grupo"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -288,6 +336,28 @@ export function GroupDetailPage() {
           </button>
           <button onClick={handleLeave} disabled={leaving || Math.abs(myBalance?.amount || 0) > 0.01} className="flex-1 py-2.5 bg-neon-red/20 border border-neon-red/30 text-neon-red rounded-xl hover:bg-neon-red/30 transition-colors text-sm font-medium disabled:opacity-50">
             {leaving ? <LoadingSpinner size="sm" className="justify-center" /> : 'Abandonar'}
+          </button>
+        </div>
+      </Modal>
+
+      <Modal isOpen={showExpelModal} onClose={() => setShowExpelModal(false)} title="Expulsar integrante">
+        <p className="text-sm text-text-secondary mb-5">
+          ¿Estás seguro de que quieres echar a <strong className="text-text-primary">{expelTarget?.name}</strong> del grupo? 
+          Ya no podrá ver los gastos ni participar.
+        </p>
+
+        {expelError && (
+          <div className="mb-4 p-3 bg-neon-red/10 border border-neon-red/30 rounded-lg text-neon-red text-xs">
+            {expelError}
+          </div>
+        )}
+
+        <div className="flex gap-3">
+          <button onClick={() => setShowExpelModal(false)} className="flex-1 py-2.5 bg-bg-tertiary border border-border text-text-primary rounded-xl hover:bg-border transition-colors text-sm font-medium">
+            Cancelar
+          </button>
+          <button onClick={handleExpel} disabled={expelling} className="flex-1 py-2.5 bg-neon-red/20 border border-neon-red/30 text-neon-red rounded-xl hover:bg-neon-red/30 transition-colors text-sm font-medium disabled:opacity-50">
+            {expelling ? <LoadingSpinner size="sm" className="justify-center" /> : 'Expulsar'}
           </button>
         </div>
       </Modal>

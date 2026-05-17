@@ -70,20 +70,45 @@ export async function leaveGroup(groupId: string, userId: string): Promise<void>
   
   const groupData = docSnap.data() as Group;
   
-  if (groupData.ownerId === userId && groupData.memberIds.length > 1) {
-    throw new Error('El creador no puede abandonar el grupo mientras haya otros miembros. Elimina el grupo o pide a los demás que salgan primero.');
-  }
-
   const updatedMemberIds = groupData.memberIds.filter(id => id !== userId);
   const updatedMembers = groupData.members.filter(m => m.uid !== userId);
 
   if (updatedMemberIds.length === 0) {
-
     await deleteDoc(docRef);
   } else {
-    await updateDoc(docRef, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updates: any = {
       memberIds: updatedMemberIds,
       members: updatedMembers
-    });
+    };
+    
+    if (groupData.ownerId === userId) {
+      updates.ownerId = updatedMemberIds[0];
+    }
+    
+    await updateDoc(docRef, updates);
   }
+}
+
+export async function removeMemberFromGroup(groupId: string, ownerId: string, memberIdToRemove: string): Promise<void> {
+  const docRef = doc(db, GROUPS_COLLECTION, groupId);
+  const docSnap = await getDoc(docRef);
+  if (!docSnap.exists()) throw new Error('Grupo no encontrado');
+  
+  const groupData = docSnap.data() as Group;
+  
+  if (groupData.ownerId !== ownerId) {
+    throw new Error('Solo el propietario puede expulsar a otros miembros');
+  }
+  if (ownerId === memberIdToRemove) {
+    throw new Error('El propietario no puede expulsarse a sí mismo de esta forma');
+  }
+
+  const updatedMemberIds = groupData.memberIds.filter(id => id !== memberIdToRemove);
+  const updatedMembers = groupData.members.filter(m => m.uid !== memberIdToRemove);
+
+  await updateDoc(docRef, {
+    memberIds: updatedMemberIds,
+    members: updatedMembers
+  });
 }

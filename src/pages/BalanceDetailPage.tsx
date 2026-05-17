@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGroup } from '../hooks/useGroups';
@@ -23,6 +23,12 @@ export function BalanceDetailPage() {
   const [settleTarget, setSettleTarget] = useState<{ userId: string; name: string; amount: number; direction: 'paying' | 'receiving' } | null>(null);
   const [settleAmount, setSettleAmount] = useState('');
   const [settleLoading, setSettleLoading] = useState(false);
+
+  useEffect(() => {
+    if (group && user && !group.memberIds.includes(user.uid)) {
+      navigate('/');
+    }
+  }, [group, user, navigate]);
 
   const loading = groupLoading || expensesLoading;
   const myBalance = balances.find((b) => b.userId === user?.uid);
