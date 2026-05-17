@@ -29,6 +29,12 @@ export function ExpenseDetailPage() {
     });
   }, [groupId, expenseId]);
 
+  useEffect(() => {
+    if (group && user && !group.memberIds.includes(user.uid)) {
+      navigate('/');
+    }
+  }, [group, user, navigate]);
+
   const handleDelete = async () => {
     if (!groupId || !expenseId) return;
     setDeleting(true);

@@ -26,11 +26,15 @@ export function CreateExpensePage() {
 
   useEffect(() => {
     if (group && user) {
+      if (!group.memberIds.includes(user.uid)) {
+        navigate('/');
+        return;
+      }
       setCurrency(group.currency);
       setPaidBy(user.uid);
       setSplitAmong(group.memberIds);
     }
-  }, [group, user]);
+  }, [group, user, navigate]);
 
   const handleSplitAmongToggle = (uid: string) => {
     setSplitAmong((prev) => prev.includes(uid) ? prev.filter((id) => id !== uid) : [...prev, uid]);

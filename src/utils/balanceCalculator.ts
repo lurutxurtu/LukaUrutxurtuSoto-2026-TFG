@@ -41,11 +41,16 @@ export function calculateBalances(
     balanceMap[settlement.toUserId] = (balanceMap[settlement.toUserId] || 0) - convertedAmount;
   }
 
-  return Object.entries(balanceMap).map(([userId, amount]) => ({
-    userId,
-    displayName: memberNames[userId] || 'Desconocido',
-    amount: Math.round(amount * 100) / 100,
-  }));
+  return Object.entries(balanceMap)
+    .filter(([userId, amount]) => {
+      if (memberNames[userId]) return true;
+      return Math.abs(amount) >= 0.01;
+    })
+    .map(([userId, amount]) => ({
+      userId,
+      displayName: memberNames[userId] || 'Desconocido',
+      amount: Math.round(amount * 100) / 100,
+    }));
 }
 
 export function simplifyDebts(
