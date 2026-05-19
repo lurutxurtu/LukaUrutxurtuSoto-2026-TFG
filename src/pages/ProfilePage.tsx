@@ -4,14 +4,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { getInitials } from '../utils/formatters';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { Modal } from '../components/ui/Modal';
+import { EditableTitle } from '../components/ui/EditableTitle';
 
 export function ProfilePage() {
   const { user, logout, updateUserProfile, changePassword, deleteAccount } = useAuth();
   const navigate = useNavigate();
 
-  const [editingName, setEditingName] = useState(false);
-  const [newName, setNewName] = useState(user?.displayName || '');
-  const [nameLoading, setNameLoading] = useState(false);
+
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -27,18 +26,7 @@ export function ProfilePage() {
 
   const isEmailUser = user?.providerData.some((p) => p.providerId === 'password');
 
-  const handleUpdateName = async () => {
-    if (!newName.trim()) return;
-    setNameLoading(true);
-    try {
-      await updateUserProfile(newName.trim());
-      setEditingName(false);
-    } catch (err) {
-      console.error('Error al actualizar nombre:', err);
-    } finally {
-      setNameLoading(false);
-    }
-  };
+
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,24 +90,15 @@ export function ProfilePage() {
           )}
         </div>
 
-        {editingName ? (
-          <div className="flex items-center gap-2 max-w-xs mx-auto">
-            <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} className="flex-1 px-3 py-2 bg-bg-tertiary border border-border rounded-xl text-text-primary text-center focus:outline-none focus:border-neon-pink transition-all text-sm" autoFocus />
-            <button onClick={handleUpdateName} disabled={nameLoading} className="p-2 rounded-lg bg-neon-green/20 text-neon-green hover:bg-neon-green/30 transition-colors">
-              {nameLoading ? <LoadingSpinner size="sm" /> : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-            </button>
-            <button onClick={() => { setEditingName(false); setNewName(user.displayName || ''); }} className="p-2 rounded-lg bg-neon-red/20 text-neon-red hover:bg-neon-red/30 transition-colors">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          </div>
-        ) : (
-          <button onClick={() => setEditingName(true)} className="group">
-            <h2 className="text-xl font-semibold text-text-primary group-hover:text-neon-pink transition-colors inline-flex items-center gap-2">
-              {user.displayName || 'Sin nombre'}
-              <svg className="w-4 h-4 text-text-muted group-hover:text-neon-pink transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z" /></svg>
-            </h2>
-          </button>
-        )}
+        <EditableTitle
+          initialName={user.displayName || ''}
+          fallbackName="Sin nombre"
+          onSave={async (name) => {
+            if (name.trim()) await updateUserProfile(name.trim());
+          }}
+          canEdit={true}
+          centered={true}
+        />
 
         <p className="text-sm text-text-secondary mt-1">{user.email}</p>
 
@@ -179,7 +158,7 @@ export function ProfilePage() {
       <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Eliminar cuenta">
         <div className="space-y-4">
           <div className="p-3 bg-neon-red/10 border border-neon-red/20 rounded-xl">
-            <p className="text-sm text-neon-red">⚠️ Esta acción eliminará tu cuenta permanentemente. No podrás recuperarla.</p>
+            <p className="text-sm text-neon-red"> Esta acción eliminará tu cuenta permanentemente. No podrás recuperarla.</p>
           </div>
 
           {isEmailUser && (

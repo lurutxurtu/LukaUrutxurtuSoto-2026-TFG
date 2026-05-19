@@ -7,6 +7,7 @@ import { useSettlements } from '../hooks/useSettlements';
 import { useBalances } from '../hooks/useBalances';
 import { createSettlement } from '../services/settlementService';
 import { formatCurrency } from '../utils/formatters';
+import { PartyPopper } from 'lucide-react';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { Modal } from '../components/ui/Modal';
 
@@ -81,7 +82,7 @@ export function BalanceDetailPage() {
           {(myBalance?.amount ?? 0) > 0 ? '+' : ''}{formatCurrency(myBalance?.amount ?? 0, group.currency)}
         </p>
         <p className="text-xs text-text-secondary mt-2">
-          {(myBalance?.amount ?? 0) > 0.01 ? 'En total te deben esta cantidad' : (myBalance?.amount ?? 0) < -0.01 ? 'En total debes esta cantidad' : '¡Estás en paz! ✌️'}
+          {(myBalance?.amount ?? 0) > 0.01 ? 'En total te deben esta cantidad' : (myBalance?.amount ?? 0) < -0.01 ? 'En total debes esta cantidad' : '¡Estás en paz!'}
         </p>
       </div>
 
@@ -130,7 +131,9 @@ export function BalanceDetailPage() {
 
       {myDebtsOwed.length === 0 && myDebtsReceivable.length === 0 && (
         <div className="text-center py-8">
-          <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-bg-secondary border border-border flex items-center justify-center text-3xl">✌️</div>
+          <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-bg-secondary border border-border flex items-center justify-center text-text-secondary">
+            <PartyPopper className="w-8 h-8" />
+          </div>
           <p className="text-text-secondary text-sm">No tienes deudas pendientes</p>
         </div>
       )}

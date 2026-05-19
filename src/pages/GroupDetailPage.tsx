@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGroup } from '../hooks/useGroups';
-import { leaveGroup, removeMemberFromGroup } from '../services/groupService';
+import { leaveGroup, removeMemberFromGroup, updateGroupName } from '../services/groupService';
 import { useExpenses } from '../hooks/useExpenses';
 import { useSettlements } from '../hooks/useSettlements';
 import { useBalances } from '../hooks/useBalances';
 import { formatCurrency, formatDate, getInitials } from '../utils/formatters';
 import { EXPENSE_CATEGORIES } from '../types';
-import { Package } from 'lucide-react';
+import { Package, Receipt } from 'lucide-react';
+import { EditableTitle } from '../components/ui/EditableTitle';
 import { Modal } from '../components/ui/Modal';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
@@ -28,6 +29,8 @@ export function GroupDetailPage() {
 
   const [activeTab, setActiveTab] = useState<Tab>('expenses');
   const [copied, setCopied] = useState(false);
+
+
 
   useEffect(() => {
     if (group && user && !group.memberIds.includes(user.uid)) {
@@ -121,7 +124,13 @@ export function GroupDetailPage() {
   return (
     <div className="py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-text-primary mb-2">{group.name}</h1>
+        <EditableTitle 
+          initialName={group.name} 
+          onSave={async (name) => {
+            if (group) await updateGroupName(group.id, name);
+          }} 
+          canEdit={group.ownerId === user?.uid} 
+        />
         <button onClick={copyJoinCode} className="inline-flex items-center gap-2 px-3 py-1.5 bg-bg-secondary border border-border rounded-xl text-sm hover:border-neon-green/50 transition-all">
           <span className="text-text-secondary">Código:</span>
           <span className="font-mono font-semibold text-neon-green tracking-wider">{group.joinCode}</span>
@@ -160,7 +169,9 @@ export function GroupDetailPage() {
 
           {expenses.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-bg-secondary border border-border flex items-center justify-center text-3xl">💸</div>
+              <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-bg-secondary border border-border flex items-center justify-center">
+                <Receipt className="w-8 h-8 text-text-secondary" strokeWidth={1.5} />
+              </div>
               <p className="text-text-secondary text-sm">No hay gastos todavía</p>
               <p className="text-text-muted text-xs mt-1">Añade el primer gasto del grupo</p>
             </div>
