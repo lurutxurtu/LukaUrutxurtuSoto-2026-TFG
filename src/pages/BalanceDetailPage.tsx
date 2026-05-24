@@ -7,9 +7,12 @@ import { useSettlements } from '../hooks/useSettlements';
 import { useBalances } from '../hooks/useBalances';
 import { createSettlement } from '../services/settlementService';
 import { formatCurrency } from '../utils/formatters';
+import { getInitials } from '../utils/formatters';
 import { PartyPopper } from 'lucide-react';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { Modal } from '../components/ui/Modal';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 
 export function BalanceDetailPage() {
   const { id: groupId } = useParams<{ id: string }>();
@@ -138,7 +141,9 @@ export function BalanceDetailPage() {
         </div>
       )}
 
-      <button onClick={() => navigate(`/group/${groupId}`)} className="w-full py-3 mt-4 bg-bg-tertiary border border-border text-text-primary font-medium rounded-xl hover:bg-border transition-colors text-sm">Volver al grupo</button>
+      <Button variant="secondary" onClick={() => navigate(`/group/${groupId}`)} fullWidth className="mt-4">
+        Volver al grupo
+      </Button>
 
       <Modal isOpen={showSettleModal} onClose={() => { setShowSettleModal(false); setSettleTarget(null); }} title="Registrar pago">
         {settleTarget && (
@@ -147,15 +152,22 @@ export function BalanceDetailPage() {
               {settleTarget.direction === 'paying' ? 'Registrar un pago a ' : 'Registrar un cobro de '}
               <span className="text-text-primary font-medium">{settleTarget.name}</span>
             </p>
-            <div>
-              <label htmlFor="settleAmount" className="block text-sm font-medium text-text-secondary mb-1.5">Cantidad ({group.currency})</label>
-              <input id="settleAmount" type="number" step="0.01" min="0.01" value={settleAmount} onChange={(e) => setSettleAmount(e.target.value)} className="w-full px-4 py-2.5 bg-bg-tertiary border border-border rounded-xl text-text-primary focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink/30 transition-all" />
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => { setShowSettleModal(false); setSettleTarget(null); }} className="flex-1 py-2.5 bg-bg-tertiary border border-border text-text-primary rounded-xl hover:bg-border transition-colors text-sm font-medium">Cancelar</button>
-              <button onClick={handleSettle} disabled={settleLoading} className="flex-1 py-2.5 bg-gradient-to-r from-neon-green to-[#32cd32] text-bg-primary font-semibold rounded-xl hover:shadow-[0_0_15px_rgba(57,255,20,0.3)] transition-all disabled:opacity-50 text-sm">
-                {settleLoading ? <LoadingSpinner size="sm" className="justify-center" /> : (settleTarget.direction === 'paying' ? 'Confirmar pago' : 'Confirmar cobro')}
-              </button>
+            <Input
+              id="settleAmount"
+              type="number"
+              step="0.01"
+              min="0.01"
+              label={`Cantidad (${group.currency})`}
+              value={settleAmount}
+              onChange={(e) => setSettleAmount(e.target.value)}
+            />
+            <div className="flex gap-3 mt-4">
+              <Button variant="secondary" onClick={() => { setShowSettleModal(false); setSettleTarget(null); }} className="flex-1">
+                Cancelar
+              </Button>
+              <Button variant="success" onClick={handleSettle} disabled={settleLoading} isLoading={settleLoading} className="flex-1">
+                {settleTarget.direction === 'paying' ? 'Confirmar pago' : 'Confirmar cobro'}
+              </Button>
             </div>
           </div>
         )}

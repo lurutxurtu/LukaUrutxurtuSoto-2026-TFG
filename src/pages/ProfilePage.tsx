@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getInitials } from '../utils/formatters';
-import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { Modal } from '../components/ui/Modal';
 import { EditableTitle } from '../components/ui/EditableTitle';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 
 export function ProfilePage() {
   const { user, logout, updateUserProfile, changePassword, deleteAccount } = useAuth();
@@ -133,25 +134,37 @@ export function ProfilePage() {
 
       <Modal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} title="Cambiar contraseña">
         <form onSubmit={handleChangePassword} className="space-y-4">
-          <div>
-            <label htmlFor="currentPwd" className="block text-sm font-medium text-text-secondary mb-1.5">Contraseña actual</label>
-            <input id="currentPwd" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required className="w-full px-4 py-2.5 bg-bg-tertiary border border-border rounded-xl text-text-primary focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink/30 transition-all" />
-          </div>
-          <div>
-            <label htmlFor="newPwd" className="block text-sm font-medium text-text-secondary mb-1.5">Nueva contraseña</label>
-            <input id="newPwd" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required className="w-full px-4 py-2.5 bg-bg-tertiary border border-border rounded-xl text-text-primary focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink/30 transition-all" />
-          </div>
-          <div>
-            <label htmlFor="confirmPwd" className="block text-sm font-medium text-text-secondary mb-1.5">Confirmar nueva contraseña</label>
-            <input id="confirmPwd" type="password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} required className="w-full px-4 py-2.5 bg-bg-tertiary border border-border rounded-xl text-text-primary focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink/30 transition-all" />
-          </div>
+          <Input
+            id="currentPwd"
+            type="password"
+            label="Contraseña actual"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            required
+          />
+          <Input
+            id="newPwd"
+            type="password"
+            label="Nueva contraseña"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+          />
+          <Input
+            id="confirmPwd"
+            type="password"
+            label="Confirmar nueva contraseña"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+            required
+          />
 
           {passwordError && <p className="text-neon-red text-sm">{passwordError}</p>}
           {passwordSuccess && <p className="text-neon-green text-sm">{passwordSuccess}</p>}
 
-          <button type="submit" disabled={passwordLoading} className="w-full py-3 bg-gradient-to-r from-neon-pink to-neon-pink-light text-white font-semibold rounded-xl hover:shadow-[0_0_20px_rgba(255,45,138,0.4)] transition-all disabled:opacity-50">
-            {passwordLoading ? <LoadingSpinner size="sm" className="justify-center" /> : 'Cambiar contraseña'}
-          </button>
+          <Button type="submit" isLoading={passwordLoading} fullWidth>
+            Cambiar contraseña
+          </Button>
         </form>
       </Modal>
 
@@ -162,17 +175,21 @@ export function ProfilePage() {
           </div>
 
           {isEmailUser && (
-            <div>
-              <label htmlFor="deletePwd" className="block text-sm font-medium text-text-secondary mb-1.5">Confirma tu contraseña</label>
-              <input id="deletePwd" type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="w-full px-4 py-2.5 bg-bg-tertiary border border-border rounded-xl text-text-primary focus:outline-none focus:border-neon-red focus:ring-1 focus:ring-neon-red/30 transition-all" />
-            </div>
+            <Input
+              id="deletePwd"
+              type="password"
+              label="Confirma tu contraseña"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              className="focus:border-neon-red focus:ring-neon-red/30"
+            />
           )}
 
           <div className="flex gap-3">
-            <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-2.5 bg-bg-tertiary border border-border text-text-primary rounded-xl hover:bg-border transition-colors text-sm font-medium">Cancelar</button>
-            <button onClick={handleDeleteAccount} disabled={deleteLoading || (isEmailUser && !deletePassword)} className="flex-1 py-2.5 bg-neon-red/20 border border-neon-red/30 text-neon-red rounded-xl hover:bg-neon-red/30 transition-colors text-sm font-medium disabled:opacity-50">
-              {deleteLoading ? <LoadingSpinner size="sm" className="justify-center" /> : 'Eliminar cuenta'}
-            </button>
+            <Button variant="secondary" onClick={() => setShowDeleteModal(false)} className="flex-1">Cancelar</Button>
+            <Button variant="danger" onClick={handleDeleteAccount} disabled={isEmailUser && !deletePassword} isLoading={deleteLoading} className="flex-1">
+              Eliminar cuenta
+            </Button>
           </div>
         </div>
       </Modal>

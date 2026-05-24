@@ -8,6 +8,7 @@ import { EXPENSE_CATEGORIES, type Expense } from '../types';
 import { Package } from 'lucide-react';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { Modal } from '../components/ui/Modal';
+import { Button } from '../components/ui/Button';
 
 export function ExpenseDetailPage() {
   const { id: groupId, expenseId } = useParams<{ id: string; expenseId: string }>();
@@ -128,10 +129,12 @@ export function ExpenseDetailPage() {
       <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Eliminar gasto">
         <p className="text-sm text-text-secondary mb-5">¿Estás seguro de que quieres eliminar "{expense.description}"? Esta acción no se puede deshacer.</p>
         <div className="flex gap-3">
-          <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-2.5 bg-bg-tertiary border border-border text-text-primary rounded-xl hover:bg-border transition-colors text-sm font-medium">Cancelar</button>
-          <button onClick={handleDelete} disabled={deleting} className="flex-1 py-2.5 bg-neon-red/20 border border-neon-red/30 text-neon-red rounded-xl hover:bg-neon-red/30 transition-colors text-sm font-medium disabled:opacity-50">
-            {deleting ? <LoadingSpinner size="sm" className="justify-center" /> : 'Eliminar'}
-          </button>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)} className="flex-1">
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={handleDelete} disabled={deleting} isLoading={deleting} className="flex-1">
+            Eliminar
+          </Button>
         </div>
       </Modal>
     </div>

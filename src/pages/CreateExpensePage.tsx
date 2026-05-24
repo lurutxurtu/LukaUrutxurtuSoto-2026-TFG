@@ -6,6 +6,8 @@ import { createExpense } from '../services/expenseService';
 import { getExchangeRate } from '../services/currencyService';
 import { EXPENSE_CATEGORIES, SUPPORTED_CURRENCIES, type SplitType } from '../types';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 
 export function CreateExpensePage() {
   const { id: groupId } = useParams<{ id: string }>();
@@ -117,15 +119,29 @@ export function CreateExpensePage() {
 
       <div className="bg-bg-secondary border border-border rounded-2xl p-6">
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-text-secondary mb-1.5">Descripción</label>
-            <input id="description" type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ej: Cena en restaurante" required className="w-full px-4 py-2.5 bg-bg-tertiary border border-border rounded-xl text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink/30 transition-all" />
-          </div>
+          <Input
+            id="description"
+            label="Descripción"
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Ej: Cena en restaurante"
+            required
+          />
 
           <div className="flex gap-3">
             <div className="flex-1">
-              <label htmlFor="amount" className="block text-sm font-medium text-text-secondary mb-1.5">Monto</label>
-              <input id="amount" type="number" step="0.01" min="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" required className="w-full px-4 py-2.5 bg-bg-tertiary border border-border rounded-xl text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink/30 transition-all" />
+              <Input
+                id="amount"
+                label="Monto"
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                required
+              />
             </div>
             <div className="w-28">
               <label htmlFor="currency" className="block text-sm font-medium text-text-secondary mb-1.5">Moneda</label>
@@ -193,9 +209,9 @@ export function CreateExpensePage() {
 
           {error && <p className="text-neon-red text-sm">{error}</p>}
 
-          <button type="submit" disabled={loading || !description.trim() || !amount} className="w-full py-3 bg-gradient-to-r from-neon-pink to-neon-pink-light text-white font-semibold rounded-xl hover:shadow-[0_0_20px_rgba(255,45,138,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-            {loading ? <LoadingSpinner size="sm" className="justify-center" /> : 'Guardar gasto'}
-          </button>
+          <Button type="submit" disabled={!description.trim() || !amount} isLoading={loading} fullWidth>
+            Guardar gasto
+          </Button>
         </form>
       </div>
     </div>

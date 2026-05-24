@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { createGroup } from '../services/groupService';
 import { SUPPORTED_CURRENCIES } from '../types';
-import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 
 export function CreateGroupPage() {
   const { user } = useAuth();
@@ -47,20 +48,15 @@ export function CreateGroupPage() {
 
       <div className="bg-bg-secondary border border-border rounded-2xl p-6 shadow-xl">
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-text-secondary mb-1.5">
-              Nombre del grupo
-            </label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ej: Viaje a Madrid"
-              className="w-full px-4 py-3 bg-bg-tertiary border border-border rounded-xl text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink/30 transition-all"
-              autoFocus
-            />
-          </div>
+          <Input
+            id="name"
+            label="Nombre del grupo"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ej: Viaje a Madrid"
+            autoFocus
+          />
 
           <div>
             <label htmlFor="currency" className="block text-sm font-medium text-text-secondary mb-1.5">
@@ -89,13 +85,9 @@ export function CreateGroupPage() {
 
           {error && <p className="text-sm text-neon-red">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading || !name.trim()}
-            className="w-full py-3 mt-2 bg-gradient-to-r from-neon-pink to-neon-pink-light text-white font-semibold rounded-xl hover:shadow-[0_0_20px_rgba(255,45,138,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center"
-          >
-            {loading ? <LoadingSpinner size="sm" /> : 'Crear grupo'}
-          </button>
+          <Button type="submit" disabled={!name.trim()} isLoading={loading} fullWidth className="mt-2">
+            Crear grupo
+          </Button>
         </form>
       </div>
     </div>

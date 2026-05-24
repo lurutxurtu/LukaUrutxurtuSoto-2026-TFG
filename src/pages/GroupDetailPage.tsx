@@ -8,10 +8,11 @@ import { useSettlements } from '../hooks/useSettlements';
 import { useBalances } from '../hooks/useBalances';
 import { formatCurrency, formatDate, getInitials } from '../utils/formatters';
 import { EXPENSE_CATEGORIES } from '../types';
-import { Package, Receipt } from 'lucide-react';
+import { Package, Receipt, Copy, Check } from 'lucide-react';
 import { EditableTitle } from '../components/ui/EditableTitle';
 import { Modal } from '../components/ui/Modal';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { Button } from '../components/ui/Button';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 type Tab = 'expenses' | 'balance';
@@ -162,10 +163,10 @@ export function GroupDetailPage() {
 
       {activeTab === 'expenses' ? (
         <div>
-          <button onClick={() => navigate(`/group/${groupId}/expense`)} className="w-full mb-4 py-3 bg-gradient-to-r from-neon-pink to-neon-pink-light text-white font-semibold rounded-xl hover:shadow-[0_0_20px_rgba(255,45,138,0.4)] transition-all flex items-center justify-center gap-2">
+          <Button onClick={() => navigate(`/group/${groupId}/expense`)} fullWidth className="mb-4">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
             Añadir gasto
-          </button>
+          </Button>
 
           {expenses.length === 0 ? (
             <div className="text-center py-12">
@@ -318,10 +319,10 @@ export function GroupDetailPage() {
         </div>
       )}
 
-      <div className="sticky bottom-[76px] md:bottom-8 z-20 mt-8 pt-4 pb-2 bg-bg-primary/90 backdrop-blur-md shadow-[0_-20px_20px_-15px_rgba(15,23,42,0.8)] before:absolute before:-top-6 before:left-0 before:right-0 before:h-6 before:bg-gradient-to-t before:from-bg-primary/90 before:to-transparent">
-        <button onClick={() => setShowLeaveModal(true)} className="w-full py-3.5 bg-neon-red/10 border border-neon-red/30 text-neon-red font-semibold rounded-xl hover:bg-neon-red/20 transition-colors shadow-sm">
+      <div className="sticky bottom-[76px] z-20 mt-8 pt-4 pb-2 bg-bg-primary/90 backdrop-blur-md shadow-[0_-20px_20px_-15px_rgba(15,23,42,0.8)] before:absolute before:-top-6 before:left-0 before:right-0 before:h-6 before:bg-gradient-to-t before:from-bg-primary/90 before:to-transparent">
+        <Button variant="danger" onClick={() => setShowLeaveModal(true)} fullWidth>
           Abandonar grupo
-        </button>
+        </Button>
       </div>
 
       <Modal isOpen={showLeaveModal} onClose={() => setShowLeaveModal(false)} title="Abandonar grupo">
@@ -342,12 +343,12 @@ export function GroupDetailPage() {
         )}
 
         <div className="flex gap-3">
-          <button onClick={() => setShowLeaveModal(false)} className="flex-1 py-2.5 bg-bg-tertiary border border-border text-text-primary rounded-xl hover:bg-border transition-colors text-sm font-medium">
+          <Button variant="secondary" onClick={() => setShowLeaveModal(false)} className="flex-1">
             Cancelar
-          </button>
-          <button onClick={handleLeave} disabled={leaving || Math.abs(myBalance?.amount || 0) > 0.01} className="flex-1 py-2.5 bg-neon-red/20 border border-neon-red/30 text-neon-red rounded-xl hover:bg-neon-red/30 transition-colors text-sm font-medium disabled:opacity-50">
-            {leaving ? <LoadingSpinner size="sm" className="justify-center" /> : 'Abandonar'}
-          </button>
+          </Button>
+          <Button variant="danger" onClick={handleLeave} disabled={leaving || Math.abs(myBalance?.amount || 0) > 0.01} isLoading={leaving} className="flex-1">
+            Abandonar
+          </Button>
         </div>
       </Modal>
 
@@ -364,12 +365,12 @@ export function GroupDetailPage() {
         )}
 
         <div className="flex gap-3">
-          <button onClick={() => setShowExpelModal(false)} className="flex-1 py-2.5 bg-bg-tertiary border border-border text-text-primary rounded-xl hover:bg-border transition-colors text-sm font-medium">
+          <Button variant="secondary" onClick={() => setShowExpelModal(false)} className="flex-1">
             Cancelar
-          </button>
-          <button onClick={handleExpel} disabled={expelling} className="flex-1 py-2.5 bg-neon-red/20 border border-neon-red/30 text-neon-red rounded-xl hover:bg-neon-red/30 transition-colors text-sm font-medium disabled:opacity-50">
-            {expelling ? <LoadingSpinner size="sm" className="justify-center" /> : 'Expulsar'}
-          </button>
+          </Button>
+          <Button variant="danger" onClick={handleExpel} disabled={expelling} isLoading={expelling} className="flex-1">
+            Expulsar
+          </Button>
         </div>
       </Modal>
     </div>

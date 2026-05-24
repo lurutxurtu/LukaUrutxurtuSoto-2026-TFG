@@ -6,6 +6,8 @@ import { joinGroupByCode } from '../services/groupService';
 import { timeAgo } from '../utils/formatters';
 import { Modal } from '../components/ui/Modal';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 import type { GroupMember } from '../types';
 
 export function HomePage() {
@@ -107,41 +109,36 @@ export function HomePage() {
         )}
       </div>
 
-      <div className="sticky bottom-[76px] md:bottom-8 z-20 flex gap-3 pt-3 pb-2 bg-bg-primary/90 backdrop-blur-md shadow-[0_-20px_20px_-15px_rgba(15,23,42,0.8)] before:absolute before:-top-6 before:left-0 before:right-0 before:h-6 before:bg-gradient-to-t before:from-bg-primary/90 before:to-transparent">
-        <button onClick={() => navigate('/create-group')} className="flex-1 py-3.5 bg-gradient-to-r from-neon-pink to-neon-pink-light text-white font-semibold rounded-xl hover:shadow-[0_0_20px_rgba(255,45,138,0.4)] transition-all flex justify-center items-center gap-2">
+      <div className="sticky bottom-[76px] z-20 flex gap-3 pt-3 pb-2 bg-bg-primary/90 backdrop-blur-md shadow-[0_-20px_20px_-15px_rgba(15,23,42,0.8)] before:absolute before:-top-6 before:left-0 before:right-0 before:h-6 before:bg-gradient-to-t before:from-bg-primary/90 before:to-transparent">
+        <Button onClick={() => navigate('/create-group')} className="flex-1">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
           Crear grupo
-        </button>
-        <button onClick={() => setShowJoinModal(true)} className="flex-1 py-3.5 bg-bg-secondary border border-border text-text-primary font-semibold rounded-xl hover:border-neon-green/50 hover:text-neon-green transition-all flex justify-center items-center gap-2">
+        </Button>
+        <Button variant="secondary" onClick={() => setShowJoinModal(true)} className="flex-1 hover:border-neon-green/50 hover:text-neon-green">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
           </svg>
           Unirse a grupo
-        </button>
+        </Button>
       </div>
 
       <Modal isOpen={showJoinModal} onClose={() => setShowJoinModal(false)} title="Unirse a un grupo">
         <form onSubmit={handleJoinGroup} className="space-y-4">
-          <div>
-            <label htmlFor="joinCode" className="block text-sm font-medium text-text-secondary mb-1">
-              Código de invitación
-            </label>
-            <input
-              id="joinCode"
-              type="text"
-              required
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              placeholder="Ej: A1B2C3"
-              className="w-full px-4 py-3 bg-bg-tertiary border border-border rounded-xl text-text-primary placeholder-text-muted font-mono uppercase tracking-wider focus:outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green/30 transition-all"
-            />
-          </div>
-          {joinError && <p className="text-sm text-neon-red">{joinError}</p>}
-          <button type="submit" disabled={joining || !joinCode} className="w-full py-3 bg-gradient-to-r from-neon-green to-[#32cd32] text-bg-primary font-semibold rounded-xl hover:shadow-[0_0_20px_rgba(57,255,20,0.4)] transition-all disabled:opacity-50">
-            {joining ? <LoadingSpinner size="sm" /> : 'Unirse al grupo'}
-          </button>
+          <Input
+            id="joinCode"
+            label="Código de invitación"
+            required
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+            placeholder="Ej: A1B2C3"
+            className="font-mono uppercase tracking-wider focus:border-neon-green focus:ring-neon-green/30"
+            error={joinError}
+          />
+          <Button type="submit" variant="success" fullWidth disabled={joining || !joinCode} isLoading={joining}>
+            {joining ? 'Buscando...' : 'Unirse al grupo'}
+          </Button>
         </form>
       </Modal>
     </div>
