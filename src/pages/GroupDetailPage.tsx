@@ -8,7 +8,7 @@ import { useSettlements } from '../hooks/useSettlements';
 import { useBalances } from '../hooks/useBalances';
 import { formatCurrency, formatDate, getInitials } from '../utils/formatters';
 import { EXPENSE_CATEGORIES } from '../types';
-import { Package, Receipt, Copy, Check } from 'lucide-react';
+import { Package, Receipt } from 'lucide-react';
 import { EditableTitle } from '../components/ui/EditableTitle';
 import { Modal } from '../components/ui/Modal';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';

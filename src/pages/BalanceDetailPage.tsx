@@ -7,7 +7,6 @@ import { useSettlements } from '../hooks/useSettlements';
 import { useBalances } from '../hooks/useBalances';
 import { createSettlement } from '../services/settlementService';
 import { formatCurrency } from '../utils/formatters';
-import { getInitials } from '../utils/formatters';
 import { PartyPopper } from 'lucide-react';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { Modal } from '../components/ui/Modal';
