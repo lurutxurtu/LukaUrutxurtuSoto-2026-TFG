@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, getDocs, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import type { Settlement } from '../types';
 
@@ -18,7 +18,8 @@ export async function createSettlement(
   }
 ): Promise<string> {
   const settlementData = { ...data, groupId, createdAt: serverTimestamp() };
-  const docRef = await addDoc(settlementsCollection(groupId), settlementData);
+  const docRef = doc(settlementsCollection(groupId));
+  setDoc(docRef, settlementData).catch(err => console.error("Sync error:", err));
   return docRef.id;
 }
 

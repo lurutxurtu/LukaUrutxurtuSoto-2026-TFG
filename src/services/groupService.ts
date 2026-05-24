@@ -1,5 +1,5 @@
 import {
-  collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc,
+  collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc,
   query, where, orderBy, serverTimestamp, arrayUnion,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
@@ -15,7 +15,8 @@ export async function createGroup(name: string, currency: string, owner: GroupMe
     memberIds: [owner.uid], members: [owner],
     joinCode, createdAt: serverTimestamp(),
   };
-  const docRef = await addDoc(collection(db, GROUPS_COLLECTION), groupData);
+  const docRef = doc(collection(db, GROUPS_COLLECTION));
+  setDoc(docRef, groupData).catch(err => console.error("Sync error:", err));
   return docRef.id;
 }
 
@@ -48,19 +49,19 @@ export async function joinGroupByCode(joinCode: string, member: GroupMember): Pr
   const groupData = groupDoc.data() as Group;
   if (groupData.memberIds.includes(member.uid)) throw new Error('Ya eres miembro de este grupo');
 
-  await updateDoc(doc(db, GROUPS_COLLECTION, groupDoc.id), {
+  updateDoc(doc(db, GROUPS_COLLECTION, groupDoc.id), {
     memberIds: arrayUnion(member.uid),
     members: arrayUnion(member),
-  });
+  }).catch(err => console.error("Sync error:", err));
   return groupDoc.id;
 }
 
 export async function updateGroupName(groupId: string, name: string): Promise<void> {
-  await updateDoc(doc(db, GROUPS_COLLECTION, groupId), { name });
+  updateDoc(doc(db, GROUPS_COLLECTION, groupId), { name }).catch(err => console.error("Sync error:", err));
 }
 
 export async function deleteGroup(groupId: string): Promise<void> {
-  await deleteDoc(doc(db, GROUPS_COLLECTION, groupId));
+  deleteDoc(doc(db, GROUPS_COLLECTION, groupId)).catch(err => console.error("Sync error:", err));
 }
 
 export async function leaveGroup(groupId: string, userId: string): Promise<void> {
@@ -74,7 +75,7 @@ export async function leaveGroup(groupId: string, userId: string): Promise<void>
   const updatedMembers = groupData.members.filter(m => m.uid !== userId);
 
   if (updatedMemberIds.length === 0) {
-    await deleteDoc(docRef);
+    deleteDoc(docRef).catch(err => console.error("Sync error:", err));
   } else {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updates: any = {
@@ -86,7 +87,7 @@ export async function leaveGroup(groupId: string, userId: string): Promise<void>
       updates.ownerId = updatedMemberIds[0];
     }
     
-    await updateDoc(docRef, updates);
+    updateDoc(docRef, updates).catch(err => console.error("Sync error:", err));
   }
 }
 
@@ -107,8 +108,8 @@ export async function removeMemberFromGroup(groupId: string, ownerId: string, me
   const updatedMemberIds = groupData.memberIds.filter(id => id !== memberIdToRemove);
   const updatedMembers = groupData.members.filter(m => m.uid !== memberIdToRemove);
 
-  await updateDoc(docRef, {
+  updateDoc(docRef, {
     memberIds: updatedMemberIds,
     members: updatedMembers
-  });
+  }).catch(err => console.error("Sync error:", err));
 }

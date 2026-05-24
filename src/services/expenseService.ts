@@ -1,6 +1,6 @@
 import {
-  collection, doc, addDoc, getDoc, getDocs, deleteDoc,
-  query, orderBy, serverTimestamp,
+  collection, doc, getDoc, getDocs, deleteDoc,
+  query, orderBy, serverTimestamp, setDoc
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import type { Expense, SplitType } from '../types';
@@ -26,7 +26,8 @@ export async function createExpense(
   }
 ): Promise<string> {
   const expenseData = { ...data, groupId, createdAt: serverTimestamp() };
-  const docRef = await addDoc(expensesCollection(groupId), expenseData);
+  const docRef = doc(expensesCollection(groupId));
+  setDoc(docRef, expenseData).catch(err => console.error("Sync error:", err));
   return docRef.id;
 }
 
@@ -44,5 +45,5 @@ export async function getExpense(groupId: string, expenseId: string): Promise<Ex
 }
 
 export async function deleteExpense(groupId: string, expenseId: string): Promise<void> {
-  await deleteDoc(doc(db, 'groups', groupId, 'expenses', expenseId));
+  deleteDoc(doc(db, 'groups', groupId, 'expenses', expenseId)).catch(err => console.error("Sync error:", err));
 }
